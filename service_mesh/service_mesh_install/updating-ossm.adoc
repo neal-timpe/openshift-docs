@@ -1,0 +1,41 @@
+[id="updating-ossm"]
+= Updating {ProductName} from version 1.0.1 to 1.0.2
+include::modules/ossm-document-attributes.adoc[]
+:context: installing-ossm
+toc::[]
+
+Updating {ProductName} requires extra steps before you update OpenShift to version 4.2. 
+You must upgrade {ProductName} to 1.0.2 before upgrading OpenShift 4.1.x to 4.2.
+
+.Prerequisites
+
+* {ProductName} version 1.0.1
+* OpenShift version 4.1
+
+.Procedure
+
+. Configure existing SMCP resource requests by running the following patch command. Replace
+the <smcp namespace > and <smcp name> with your specific names.
++
+----
+$ oc patch -n <smcp namespace> smcp < smcp name e.g.basic-install> --type=merge -p '{"spec": {"istio": {"global": {"defaultResources": {"requests": {"cpu": "10m","memory": "128Mi"},"limits":{}},"proxy": {"resources": {"requests": {"cpu": "10m","memory": "128Mi"},"limits":{}}},"defaultPodDisruptionBudget": {"enabled": false}},"security": {"resources": {"requests": {"cpu": "10m","memory": "128Mi"}}},"galley": {"resources": {"requests": {"cpu": "10m","memory": "128Mi"}}},"pilot": {"resources": {"requests": {"cpu": "10m","memory": "128Mi"}}},"mixer": {"telemetry": {"resources": {"requests": {"cpu": "10m","memory": "128Mi"}}}},"gateways": {"istio-egressgateway": {"resources": {"requests": {"cpu": "10m","memory": "128Mi"}}},"istio-ingressgateway": {"resources": {"requests": {"cpu": "10m","memory": "128Mi"}}}},"prometheus": {"resources": {"requests": {"cpu": "10m","memory": "128Mi"}}}}}}'
+----
++
+After running this commmand, wait until all SMCP pods are replaced in the SMCP namespace.
++
+. After the pods are running in the SMCP namespace, redeploy your Data Plane applications, such as bookinfo.  
++
+. Log in as a cluster-admin user such as `kubeadmin` and then run the following command to delete the CNI `istio-node` Daemonset.  
+Replace openshift-operators if your {ProductName} operator was not installed in the default openshift-operators namespace.
++
+----
+$ oc delete -n openshift-operators daemonset istio-node
+----
++
+. Update OSSM after all pods are running in the SMCP namespace. Patch Data Plane applications by running the following command.
++
+----
+$ oc patch -n <Data Plane namespace> deployment/<deployment-name> -p '{"spec":{"template":{"metadata":{"annotations":{"kubectl.kubernetes.io/restartedAt": "'`date -Iseconds`'"}}}}}'
+----
++
+. Upgrade OpenShift with the OpenShift console.
