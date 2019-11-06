@@ -32,7 +32,7 @@ Replace openshift-operators if your {ProductName} operator was not installed in 
 $ oc delete -n openshift-operators daemonset istio-node
 ----
 +
-. Update OSSM after all pods are running in the SMCP namespace. Patch Data Plane applications by running the following command.
+. Upgrade OSSM operator and SMCP to 1.0.2. After all pods are running in the SMCP namespce, Patch Data Plane applications by running the following command for each deployment.
 +
 ----
 $ oc patch -n <Data Plane namespace> deployment/<deployment-name> -p '{"spec":{"template":{"metadata":{"annotations":{"kubectl.kubernetes.io/restartedAt": "'`date -Iseconds`'"}}}}}'
