@@ -24,6 +24,18 @@ An authorization policy includes a selector, an action, and a list of rules:
 ** The `to` field in the rules specifies constraints on request target and parameters.
 ** The `when` field specifies additional conditions needed to apply the rule.
 
+.Procedure
+
+1. Run the following command once you have written your custom resource to add your custom resource to your namespace. The namespace must match your `metadata.namespace` field.
++
+[source,terminal]
+----
+$ oc create -n <namespace> -f <path_to_yaml_file> 
+----
++
+2.
+
+
 == Configure intra-project communication
 
 You can use `AuthorizationPolicy` to configure your control plane to allow or deny the traffic communicating with your mesh or services in your mesh. 
@@ -123,7 +135,7 @@ spec:
     jwksUri: "http://keycloak.default.svc:8080/auth/realms/master/protocol/openid-connect/certs"
 ----
 
-You must pair that with a 
+You must pair that with an authorization policy. 
 
 [source,yaml]
 ----
