@@ -8,12 +8,14 @@ Module included in the following assemblies:
 
 Role-based access control (RBAC) objects determine whether a user or service is allowed to perform a given action within a project. You can define mesh-, namespace-, and workload-wide access control for your workloads in the mesh. 
 
-To configure RBAC, create an `AuthorizationPolicy` custom resource in the namespace for which you are configuring access. If you are configuring mesh-wide access, use `istio-system`. The namespace must match your `metadata.namespace` field.
+To configure RBAC, create an `AuthorizationPolicy` resource in the namespace for which you are configuring access. If you are configuring mesh-wide access, use `istio-system`. The namespace must match your `metadata.namespace` field.
 
 For example, with RBAC, you can create policies that:
 
+* Configure intra-project communication
 * Allow or deny full access to all workloads in the default namespace.
-* 
+* Configure ingress gateway access
+* Require a token for access
 
 An authorization policy includes a selector, an action, and a list of rules:
 
@@ -26,15 +28,34 @@ An authorization policy includes a selector, an action, and a list of rules:
 
 .Procedure
 
-1. Run the following command once you have written your custom resource to add your custom resource to your namespace. The namespace must match your `metadata.namespace` field.
+1. Construct your `AuthorizationPolicy` resource. The following example shows a resource that updates the ingress-policy `AuthorizationPolicy` to deny an IP address from accessing the ingress gateway.
++
+[source,yaml]
+----
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: ingress-policy
+  namespace: istio-system
+spec:
+  selector:
+    matchLabels:
+      app: istio-ingressgateway
+  action: DENY
+  rules:
+  - from:
+    - source:
+      ipBlocks: ["1.2.3.4"]
+----
++
+2. Run the following command after you write your resource to create your resource in your namespace. The namespace must match your `metadata.namespace` field.
 +
 [source,terminal]
 ----
-$ oc create -n <namespace> -f <path_to_yaml_file> 
+$ oc create -n istio-system -f <filename> 
 ----
 +
-2.
-
+3. Consider the following examples for other common configurations.
 
 == Configure intra-project communication
 
@@ -42,7 +63,7 @@ You can use `AuthorizationPolicy` to configure your control plane to allow or de
 
 === Restrict access to services outside a namespace
 
-You can deny requests from any source that is not in the `bookinfo` namespace with the following `AuthorizationPolicy` custom resource example.
+You can deny requests from any source that is not in the `bookinfo` namespace with the following `AuthorizationPolicy` resource example.
 
 [source,yaml]
 ----
@@ -93,7 +114,7 @@ spec:
   {}
 ----
 
-== Create a role for the ingress gateway
+== Allow or deny access to the ingress gateway
 
 You can set an authorization policy to add allow or deny lists based on IP addresses.
 
