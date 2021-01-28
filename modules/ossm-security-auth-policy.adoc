@@ -136,10 +136,12 @@ spec:
        ipBlocks: ["1.2.3.4", "5.6.7.0/24"]
 ----
 
-== Set restricted access with JSON Web Token (JWT)
+== Set restricted access with JSON Web Token
 
+To configure what can access services in your mesh, you can restrict access with a JSON Web Token (JWT). After authentication, a user or service can access routes, services that are associated with that token. 
 
-
+1. Create a `RequestAuthentication` resource, which defines the methods are supported by a workload. The following example accepts a JWT issued by `http://localhost:8080/auth/realms/master`.
++
 [source,yaml]
 ----
 apiVersion: "security.istio.io/v1beta1"
@@ -155,9 +157,9 @@ spec:
   - issuer: http://localhost:8080/auth/realms/master
     jwksUri: "http://keycloak.default.svc:8080/auth/realms/master/protocol/openid-connect/certs"
 ----
-
-You must pair that with an authorization policy. 
-
++
+2. You must pair the `RequestAuthentication` resource with an `AuthorizationPolicy` resource. Create the `AuthorizationPolicy` resource in the same namespace. The following example requires a JWT from `httpbin` workloads.
++
 [source,yaml]
 ----
 apiVersion: "security.istio.io/v1beta1"
