@@ -12,19 +12,19 @@ To configure RBAC, create an `AuthorizationPolicy` resource in the namespace for
 
 For example, with RBAC, you can create policies that:
 
-* Configure intra-project communication
+* Configure intra-project communication.
 * Allow or deny full access to all workloads in the default namespace.
-* Configure ingress gateway access
-* Require a token for access
+* Configure ingress gateway access.
+* Require a token for access,
 
 An authorization policy includes a selector, an action, and a list of rules:
 
 * The `selector` field specifies the target of the policy.
 * The `action` field specifies whether to allow or deny the request.
 * The `rules` specify when to trigger the action.
-** The `from` field in the rules specifies constraints on the request origin.
-** The `to` field in the rules specifies constraints on request target and parameters.
-** The `when` field specifies additional conditions needed to apply the rule.
+** The `from` field specifies constraints on the request origin.
+** The `to` field specifies constraints on request target and parameters.
+** The `when` field specifies additional conditions that to apply the rule.
 
 .Procedure
 
@@ -86,7 +86,7 @@ spec:
 
 === Creating allow-all and default deny-all authorization policies
 
-The following example shows an allow-all authorization policy that allows full access to all workloads in the default namespace.
+The following example shows an allow-all authorization policy that allows full access to all workloads in the `bookinfo` namespace.
 
 [source,yaml]
 ----
