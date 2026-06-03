@@ -1,6 +1,6 @@
 :_mod-docs-content-type: ASSEMBLY
 [id="microshift-feature-gates"]
-= Using feature gates to develop solutions for your applications
+= Using feature gates to develop solutions
 include::_attributes/attributes-microshift.adoc[]
 :context: microshift-feature-gates
 

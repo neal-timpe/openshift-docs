@@ -1,6 +1,6 @@
 :_mod-docs-content-type: ASSEMBLY
 [id="microshift-editing-network-policy"]
-= Editing a network policy
+= Managing network policies
 include::_attributes/attributes-microshift.adoc[]
 include::_attributes/common-attributes.adoc[]
 :context: microshift-editing-network-policy
@@ -8,10 +8,23 @@ include::_attributes/common-attributes.adoc[]
 toc::[]
 
 [role="_abstract"]
-You can edit an existing network policy for a namespace. 
+You can edit, view, and delete network policies for a namespace to manage network traffic control.
+
+[id="microshift-editing-network-policy_{context}"]
+== Editing a network policy
 
 Typical edits might include changes to the pods to which the policy applies, allowed ingress traffic, and the destination ports on which to accept traffic. The `apiVersion`, `kind`, and `name` fields must not be changed when editing `NetworkPolicy` objects, as these define the resource itself.
 
-include::modules/nw-networkpolicy-edit.adoc[leveloffset=+1]
+include::modules/nw-networkpolicy-edit.adoc[leveloffset=+2]
 
-include::modules/nw-networkpolicy-object.adoc[leveloffset=+1]
+include::modules/nw-networkpolicy-object.adoc[leveloffset=+2]
+
+[id="microshift-viewing-network-policy_{context}"]
+== Viewing a network policy
+
+include::modules/nw-networkpolicy-view-cli.adoc[leveloffset=+2]
+
+[id="microshift-deleting-network-policy_{context}"]
+== Deleting a network policy
+
+include::modules/nw-networkpolicy-delete-cli.adoc[leveloffset=+2]
