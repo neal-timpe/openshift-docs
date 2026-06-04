@@ -1,0 +1,68 @@
+:_mod-docs-content-type: CONCEPT
+[id="understanding-br-ex-configuration-methods_{context}"]
+= Understanding br-ex configuration methods
+
+[role="_abstract"]
+OpenShift provides two methods for configuring the `br-ex` bridge using NMState: the `install-config.yaml` interface for day 1 installation-time configuration, and MachineConfig manifests for day 2 post-installation changes.
+Understanding the differences between these approaches helps you choose the appropriate method for your deployment scenario.
+
+== install-config.yaml method (day 1)
+
+The `networking.hostConfig` parameter in `install-config.yaml` allows you to configure `br-ex` bridges at installation time.
+You specify NMState configurations directly in the installation configuration file, and the installer automatically handles base64-encoding and MachineConfig generation.
+
+This method is recommended for:
+
+* New cluster installations requiring custom `br-ex` configurations
+* Standardized network configurations across multiple nodes
+* Deployments where you want to avoid manual base64-encoding and manifest manipulation
+* VMware migrations where simplified network configuration matches existing deployment patterns
+
+== MachineConfig manifests method (day 2)
+
+The MachineConfig manifest approach requires you to manually base64-encode NMState YAML, create MachineConfig manifest files, and place them in the installer's manifests directory before running the installation.
+
+This method is appropriate for:
+
+* Post-installation network configuration changes
+* Complex multi-stage configurations that require runtime modification
+* Advanced scenarios where you need direct control over machine configuration content
+* Clusters deployed using installation methods that do not support `install-config.yaml` customization
+
+== How the installer processes hostConfig entries
+
+When you use the `networking.hostConfig` parameter, the installer performs these automated actions:
+
+1. **Reads** the `hostConfig` array from `install-config.yaml` during cluster generation.
+2. **Base64-encodes** the NMState YAML from each `networkConfig` field.
+3. **Generates** MachineConfig objects named `99-network-config-master` and `99-network-config-worker`.
+4. **Places** NMState YAML files at `/etc/nmstate/openshift/<hostname>.yml` on each node during bootstrap.
+
+The installer generates MachineConfig objects for each node role (master, worker) and places NMState configurations in those configs based on exact hostname matching.
+Each node that matches a `hostConfig` entry's hostname will receive the corresponding `networkConfig` when it processes the MachineConfig for its role.
+All nodes of a given role receive the MachineConfig, but only nodes with matching hostnames have NMState files placed in `/etc/nmstate/openshift/`.
+
+The final result is identical to the MachineConfig method: NMState files are placed on nodes, and the machine-config-daemon applies the configurations during bootstrap.
+
+== Relationship to OpenShift Virtualization
+
+Both configuration methods create `br-ex` bridges that OpenShift Virtualization uses for external network connectivity.
+Virtual machines attach to the `br-ex` bridge to access networks outside the cluster.
+
+For single-interface deployments common in virtualization scenarios, the `br-ex` bridge shares the physical interface with the host network.
+This configuration enables VMs to use the same physical network interface as the host node, which is particularly important in environments with limited network interfaces.
+
+== Day 1 vs day 2 considerations
+
+The key difference between the two methods is timing:
+
+* **Day 1 (install-config.yaml)**: Configurations are applied during cluster installation. All network settings must be known before installation begins. Changes require cluster redeployment.
+* **Day 2 (MachineConfig or NodeNetworkConfigurationPolicy)**: Configurations are applied after cluster installation. You can modify network settings on running clusters using MachineConfig objects or NodeNetworkConfigurationPolicy resources.
+
+For new installations where you know the network topology in advance, the `install-config.yaml` method provides a simplified user experience consistent with other installation-time customizations such as proxy settings, SSH keys, and platform-specific options.
+
+.Additional resources
+
+* xref:install-config-networking-hostconfig-reference_{context}[install-config networking.hostConfig parameter reference]
+* xref:configure-br-ex-install-config_{context}[Configure br-ex bridge at installation using install-config.yaml]
+* xref:comparison-br-ex-configuration-methods_{context}[Comparison: install-config vs MachineConfig methods for br-ex]

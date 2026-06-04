@@ -1,0 +1,147 @@
+:_mod-docs-content-type: PROCEDURE
+[id="verify-br-ex-install-config_{context}"]
+= Verify br-ex bridge configuration after installation
+
+[role="_abstract"]
+You can verify that the `br-ex` bridge was created correctly after an OpenShift installation that used the `networking.hostConfig` parameter in `install-config.yaml`.
+Verification ensures that the bridge exists, has the correct configuration, and is ready for virtualization workloads.
+
+.Prerequisites
+
+* You have completed an OpenShift installation with `networking.hostConfig` entries in `install-config.yaml`.
+* You have `cluster-admin` access to the OpenShift cluster.
+* You have access to nodes via `oc debug` or SSH.
+
+.Procedure
+
+. Access the node you want to verify using a debug session:
++
+[source,terminal]
+----
+$ oc debug node/<node_name>
+----
++
+Replace `<node_name>` with the name of the node you configured in the `hostConfig` entries.
+
+. Change to the host binaries:
++
+[source,terminal]
+----
+sh-4.4# chroot /host
+----
+
+. Verify that the NMState configuration file exists for this node:
++
+[source,terminal]
+----
+sh-4.4# ls /etc/nmstate/openshift/*.yml
+----
++
+This lists all NMState configuration files.
+The filename matches the hostname you specified in the `hostConfig` entry.
+For example, if your `hostConfig` entry uses hostname `control-plane-0.example.com`, the file path will be `/etc/nmstate/openshift/control-plane-0.example.com.yml`.
+Verify your hostname matches one of the files shown.
+If the file exists, the installer successfully placed the NMState configuration on this node.
+
+. Check the `br-ex` bridge status using `nmstatectl`:
++
+[source,terminal]
+----
+sh-4.4# nmstatectl show br-ex
+----
++
+.Example output
+[source,terminal]
+----
+- name: br-ex
+  type: ovs-bridge
+  state: up
+  bridge:
+    options:
+      stp: false
+    port:
+    - name: eno1
+----
++
+The output should show that the `br-ex` bridge is in the `up` state and has the correct ports attached.
++
+If the `br-ex` bridge does not exist, `nmstatectl` returns:
++
+[source,terminal]
+----
+Error: br-ex: interface not found
+----
++
+If you see this error, the NMState configuration was not applied correctly.
+Proceed to the troubleshooting procedure.
+
+. Verify the OVS bridge structure:
++
+[source,terminal]
+----
+sh-4.4# ovs-vsctl show
+----
++
+.Example output
+[source,terminal]
+----
+Bridge br-ex
+    Port br-ex
+        Interface br-ex
+            type: internal
+    Port eno1
+        Interface eno1
+----
++
+The output should show the `br-ex` bridge with the physical interface attached as a port.
+
+. Check that the machine-config containing the network configuration was applied:
++
+[source,terminal]
+----
+$ oc get machineconfigs | grep network-config
+----
++
+.Example output
+[source,terminal]
+----
+99-network-config-master     3.2.0    8h
+99-network-config-worker     3.2.0    8h
+----
++
+The installer generates MachineConfig objects named `99-network-config-<role>` for each node role that has matching `hostConfig` entries.
+For example, if you configured control plane nodes, you will see `99-network-config-master`.
+If you configured worker nodes, you will see `99-network-config-worker`.
+Check for the MachineConfig corresponding to the node role you configured.
+
+. Review machine-config-daemon logs for any errors during configuration application:
++
+[source,terminal]
+----
+$ oc logs -n openshift-machine-config-operator -l k8s-app=machine-config-daemon --tail=100 | grep -i nmstate
+----
++
+To view logs for a specific node:
++
+[source,terminal]
+----
+$ oc logs -n openshift-machine-config-operator -l k8s-app=machine-config-daemon --field-selector spec.nodeName=<node_name> --tail=100
+----
++
+If the logs contain errors related to NMState or network configuration, proceed to the troubleshooting procedure.
+
+.Verification
+
+* The `br-ex` bridge is in the `up` state.
+* The physical interface you specified is attached to the `br-ex` bridge as a port.
+* The NMState configuration file exists at `/etc/nmstate/openshift/<hostname>.yml` on the node.
+* The machine-config-daemon logs show no errors related to network configuration application.
+
+.Troubleshooting
+
+If the `br-ex` bridge was not created or has incorrect configuration, see the troubleshooting procedure.
+
+.Additional resources
+
+* xref:troubleshoot-br-ex-install-config_{context}[Troubleshoot br-ex install-config configuration issues]
+* xref:configure-br-ex-install-config_{context}[Configure br-ex bridge at installation using install-config.yaml]

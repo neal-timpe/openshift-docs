@@ -1,0 +1,190 @@
+{
+  "ticket": "OSDOCS-14514",
+  "ticket_summary": "Docs for OCPSTRAT-2184 Add an install-config interface to the previously implemented feature for creating br-ex using NMState.",
+  "release": "4.19",
+  "source_date": "2026-06-04",
+  "sources_consulted": {
+    "jira_tickets": [
+      {
+        "key": "OSDOCS-14514",
+        "url": "https://redhat.atlassian.net/browse/OSDOCS-14514",
+        "summary": "Docs for OCPSTRAT-2184 Add an install-config interface to the previously implemented feature for creating br-ex using NMState."
+      },
+      {
+        "key": "OCPSTRAT-2184",
+        "url": "https://redhat.atlassian.net/browse/OCPSTRAT-2184",
+        "summary": "Add an install-config interface to the previously implemented feature for creating br-ex using NMState."
+      },
+      {
+        "key": "OPNET-592",
+        "url": "https://redhat.atlassian.net/browse/OPNET-592",
+        "summary": "Install-config interface for NMState br-ex"
+      },
+      {
+        "key": "OSDOCS-18249",
+        "url": "https://redhat.atlassian.net/browse/OSDOCS-18249",
+        "summary": "[OPNET-592] Install-config interface for NMState br-ex"
+      }
+    ],
+    "pull_requests": [
+      {
+        "url": "https://github.com/openshift/enhancements/pull/1795",
+        "title": "OPNET-592: Install-config interface for NMState configuration",
+        "files_changed": 1
+      },
+      {
+        "url": "https://github.com/openshift/installer/pull/10251",
+        "title": "OPNET-592: Add interface for NMState br-ex configuration",
+        "files_changed": 5
+      }
+    ],
+    "specifications": [],
+    "existing_docs": [
+      {
+        "path": "modules/creating-manifest-file-customized-br-ex-bridge-post.adoc",
+        "relevance": "Documents the current machine-config method for br-ex creation that the new install-config interface replaces"
+      },
+      {
+        "path": "modules/installation-two-node-creating-manifest-custom-br-ex.adoc",
+        "relevance": "Documents br-ex configuration for two-node clusters using the old method"
+      },
+      {
+        "path": "modules/migrating-br-ex-bridge-nmstate.adoc",
+        "relevance": "Documents migration of br-ex bridge using NMState"
+      }
+    ]
+  },
+  "requirements": [
+    {
+      "id": "REQ-001",
+      "title": "Document new install-config interface for br-ex NMState configuration",
+      "priority": "high",
+      "category": "new_feature",
+      "sources": [
+        {
+          "type": "jira",
+          "key": "OSDOCS-14514",
+          "url": "https://redhat.atlassian.net/browse/OSDOCS-14514"
+        },
+        {
+          "type": "jira",
+          "key": "OCPSTRAT-2184",
+          "url": "https://redhat.atlassian.net/browse/OCPSTRAT-2184"
+        },
+        {
+          "type": "pr",
+          "number": 1795,
+          "url": "https://github.com/openshift/enhancements/pull/1795"
+        },
+        {
+          "type": "pr",
+          "number": 10251,
+          "url": "https://github.com/openshift/installer/pull/10251"
+        }
+      ],
+      "one_line_summary": "Add documentation for the new install-config interface that simplifies br-ex network configuration using NMState, replacing the manual machine-config method"
+    },
+    {
+      "id": "REQ-002",
+      "title": "Update existing br-ex docs to reference new install-config method",
+      "priority": "medium",
+      "category": "enhancement",
+      "sources": [
+        {
+          "type": "jira",
+          "key": "OSDOCS-18249",
+          "url": "https://redhat.atlassian.net/browse/OSDOCS-18249"
+        }
+      ],
+      "one_line_summary": "Modify existing br-ex documentation to highlight the simplified install-config approach and provide migration guidance from the machine-config method"
+    },
+    {
+      "id": "REQ-003",
+      "title": "Document verification and troubleshooting for br-ex install-config",
+      "priority": "medium",
+      "category": "new_feature",
+      "sources": [
+        {
+          "type": "jira",
+          "key": "OSDOCS-14514",
+          "url": "https://redhat.atlassian.net/browse/OSDOCS-14514"
+        }
+      ],
+      "one_line_summary": "Create troubleshooting and verification procedures for the new br-ex install-config interface to help users confirm successful configuration and resolve common issues"
+    },
+    {
+      "id": "REQ-004",
+      "title": "Document comparison between machine-config and install-config methods",
+      "priority": "low",
+      "category": "enhancement",
+      "sources": [
+        {
+          "type": "jira",
+          "key": "OSDOCS-14514",
+          "url": "https://redhat.atlassian.net/browse/OSDOCS-14514"
+        },
+        {
+          "type": "jira",
+          "key": "OCPSTRAT-2184",
+          "url": "https://redhat.atlassian.net/browse/OCPSTRAT-2184"
+        }
+      ],
+      "one_line_summary": "Provide a comparison between the old machine-config method and new install-config interface to highlight benefits and guide users in choosing the appropriate approach"
+    }
+  ],
+  "related_tickets": {
+    "parent": {
+      "key": "OCPSTRAT-2184",
+      "url": "https://redhat.atlassian.net/browse/OCPSTRAT-2184",
+      "summary": "Add an install-config interface to the previously implemented feature for creating br-ex using NMState."
+    },
+    "ancestors": [
+      {
+        "key": "OCPSTRAT-2184",
+        "url": "https://redhat.atlassian.net/browse/OCPSTRAT-2184",
+        "summary": "Add an install-config interface to the previously implemented feature for creating br-ex using NMState."
+      }
+    ],
+    "children": [
+      {
+        "key": "OSDOCS-18249",
+        "url": "https://redhat.atlassian.net/browse/OSDOCS-18249",
+        "summary": "[OPNET-592] Install-config interface for NMState br-ex"
+      }
+    ],
+    "siblings": [
+      {
+        "key": "OPNET-592",
+        "url": "https://redhat.atlassian.net/browse/OPNET-592",
+        "summary": "Install-config interface for NMState br-ex"
+      }
+    ],
+    "linked": [
+      {
+        "key": "OCPSTRAT-2184",
+        "url": "https://redhat.atlassian.net/browse/OCPSTRAT-2184",
+        "summary": "Add an install-config interface to the previously implemented feature for creating br-ex using NMState."
+      }
+    ],
+    "web_links": []
+  },
+  "persisted_sources": {
+    "comments_file": "/Users/ntimpe/Documents/Github/openshift-docs-neal-fork/.agent_workspace/osdocs-14514/requirements.json",
+    "comments_brief_file": "/Users/ntimpe/Documents/Github/openshift-docs-neal-fork/.agent_workspace/osdocs-14514/comments-brief.md",
+    "comments_total": 1,
+    "attachment_dir": "/Users/ntimpe/Documents/Github/openshift-docs-neal-fork/.agent_workspace/osdocs-14514/requirements",
+    "attachment_count": 0,
+    "spec_files": [],
+    "diff_files": [
+      {
+        "file": "/Users/ntimpe/Documents/Github/openshift-docs-neal-fork/.agent_workspace/osdocs-14514/requirements/pr-1795.diff",
+        "lines": 245
+      },
+      {
+        "file": "/Users/ntimpe/Documents/Github/openshift-docs-neal-fork/.agent_workspace/osdocs-14514/requirements/pr-10251.diff",
+        "lines": 288
+      }
+    ]
+  },
+  "errors": []
+}

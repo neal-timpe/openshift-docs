@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "step": "writing",
+  "ticket": "OSDOCS-14514",
+  "completed_at": "2026-06-04T00:00:00Z",
+  "files": [
+    "/Users/ntimpe/Documents/Github/openshift-docs-neal-fork/.agent_workspace/osdocs-14514/writing/modules/configure-network-bridges-virtualization-installation.adoc",
+    "/Users/ntimpe/Documents/Github/openshift-docs-neal-fork/.agent_workspace/osdocs-14514/writing/modules/understanding-br-ex-configuration-methods.adoc",
+    "/Users/ntimpe/Documents/Github/openshift-docs-neal-fork/.agent_workspace/osdocs-14514/writing/modules/install-config-networking-hostconfig-reference.adoc",
+    "/Users/ntimpe/Documents/Github/openshift-docs-neal-fork/.agent_workspace/osdocs-14514/writing/modules/configure-br-ex-install-config.adoc",
+    "/Users/ntimpe/Documents/Github/openshift-docs-neal-fork/.agent_workspace/osdocs-14514/writing/modules/comparison-br-ex-configuration-methods.adoc",
+    "/Users/ntimpe/Documents/Github/openshift-docs-neal-fork/.agent_workspace/osdocs-14514/writing/modules/verify-br-ex-install-config.adoc",
+    "/Users/ntimpe/Documents/Github/openshift-docs-neal-fork/.agent_workspace/osdocs-14514/writing/modules/troubleshoot-br-ex-install-config.adoc",
+    "/Users/ntimpe/Documents/Github/openshift-docs-neal-fork/.agent_workspace/osdocs-14514/writing/assembly_configure-network-bridges-virtualization.adoc"
+  ],
+  "mode": "draft",
+  "format": "adoc",
+  "context_size_bytes": 38607
+}

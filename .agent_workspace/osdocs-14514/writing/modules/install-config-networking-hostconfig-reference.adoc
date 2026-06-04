@@ -1,0 +1,161 @@
+:_mod-docs-content-type: REFERENCE
+[id="install-config-networking-hostconfig-reference_{context}"]
+= install-config networking.hostConfig parameter reference
+
+[role="_abstract"]
+The `networking.hostConfig` parameter in `install-config.yaml` allows you to configure per-node network settings using NMState at installation time.
+This parameter is useful for customizing the `br-ex` bridge and other network interfaces on control plane and compute nodes.
+The installer automatically generates MachineConfig objects from the hostConfig entries.
+
+The `hostConfig` parameter is an array of `HostConfigEntry` objects, each defining network configuration for a specific node by hostname.
+
+.networking.hostConfig field structure
+[cols="1,1,3",options="header"]
+|===
+|Field
+|Type
+|Description
+
+|`hostConfig`
+|Array of `HostConfigEntry`
+|Optional. Array of per-node network configurations. Each entry specifies a hostname and NMState configuration that the installer applies to the matching node.
+
+|===
+
+.HostConfigEntry field structure
+[cols="1,1,3",options="header"]
+|===
+|Field
+|Type
+|Description
+
+|`hostname`
+|String
+|Required. The fully qualified domain name (FQDN) or short hostname of the node. Must match the hostname assigned during installation and resolvable via DNS.
+
+|`networkConfig`
+|Object
+|Required. NMState network configuration in YAML syntax. The installer parses this YAML and converts it internally to JSON when generating MachineConfig objects.
+
+|===
+
+== How the installer processes hostConfig entries
+
+When you provide `networking.hostConfig` entries in `install-config.yaml`, the installer performs these actions automatically:
+
+1. **Base64-encodes** the NMState YAML from each `networkConfig` field.
+2. **Generates MachineConfig objects** named `99-network-config-master` and `99-network-config-worker` containing the encoded configurations.
+3. **Places NMState YAML files** at `/etc/nmstate/openshift/<hostname>.yml` on each matching node during the bootstrap process.
+
+The configurations are applied per-node by exact hostname matching.
+If a node's hostname does not match any `hostConfig` entry, no custom network configuration is applied to that node.
+
+== Validation requirements
+
+Ensure your `hostConfig` entries meet these requirements:
+
+* **Hostname resolution**: Each hostname in a `hostConfig` entry must be resolvable via DNS before installation.
+* **NMState syntax**: The `networkConfig` field must contain valid NMState YAML. Syntax errors cause the machine-config-daemon to fail during node bootstrap.
+* **Interface names**: Network interface names in the `networkConfig` must match the actual physical interfaces on the target node.
+
+== Example configurations
+
+.Single-node br-ex configuration
+[source,yaml]
+----
+apiVersion: v1
+baseDomain: example.com
+metadata:
+  name: my-cluster
+networking:
+  hostConfig:
+  - hostname: control-plane-0.example.com
+    networkConfig:
+      interfaces:
+      - name: br-ex
+        type: ovs-bridge
+        state: up
+        bridge:
+          options:
+            stp: false
+          port:
+          - name: eno1
+      - name: eno1
+        type: ethernet
+        state: up
+        ipv4:
+          enabled: false
+----
+
+In this example, the installer creates a `br-ex` bridge on `control-plane-0.example.com` that shares the `eno1` physical interface.
+
+.Multi-node configuration with bonding
+[source,yaml]
+----
+apiVersion: v1
+baseDomain: example.com
+metadata:
+  name: my-cluster
+networking:
+  hostConfig:
+  - hostname: worker-0.example.com
+    networkConfig:
+      interfaces:
+      - name: bond0
+        type: bond
+        state: up
+        link-aggregation:
+          mode: balance-slb
+          port:
+          - eno1
+          - eno2
+      - name: br-ex
+        type: ovs-bridge
+        state: up
+        bridge:
+          options:
+            stp: false
+          port:
+          - name: bond0
+  - hostname: worker-1.example.com
+    networkConfig:
+      interfaces:
+      - name: bond0
+        type: bond
+        state: up
+        link-aggregation:
+          mode: balance-slb
+          port:
+          - eno1
+          - eno2
+      - name: br-ex
+        type: ovs-bridge
+        state: up
+        bridge:
+          options:
+            stp: false
+          port:
+          - name: bond0
+----
+
+In this example, two worker nodes each receive bonded interface configurations with `br-ex` bridges.
+
+== Platform compatibility
+
+The `networking.hostConfig` parameter is available in OpenShift 4.19 and later.
+It is most commonly used for:
+
+* Bare-metal installations requiring custom bridge configurations for virtualization workloads
+* VMware vSphere installations with single-interface deployments
+* Any installer-based installation scenario requiring per-node network customization at day 1
+
+[NOTE]
+====
+This feature is designed for platforms where you have direct control over node network configuration.
+Consult product documentation or your support team to verify platform-specific support and limitations.
+====
+
+.Additional resources
+
+* link:https://nmstate.io/[NMState documentation]
+* link:https://docs.openshift.com/container-platform/{product-version}/virt/vm_networking/virt-attaching-vm-to-linux-bridge.html[Attaching a virtual machine to a Linux bridge network]

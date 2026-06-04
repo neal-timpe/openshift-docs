@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "step": "technical-review",
+  "ticket": "OSDOCS-14514",
+  "completed_at": "2026-06-04T00:00:00Z",
+  "confidence": "MEDIUM",
+  "severity_counts": {
+    "critical": 6,
+    "significant": 7,
+    "minor": 8,
+    "sme": 7
+  },
+  "iteration": 2,
+  "code_grounded": false,
+  "context_size_bytes": 25402
+}

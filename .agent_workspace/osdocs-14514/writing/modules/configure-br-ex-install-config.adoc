@@ -1,0 +1,133 @@
+:_mod-docs-content-type: PROCEDURE
+[id="configure-br-ex-install-config_{context}"]
+= Configure br-ex bridge at installation using install-config.yaml
+
+[role="_abstract"]
+You can configure the `br-ex` bridge for virtualization workloads at installation time by adding NMState network configurations to the `networking.hostConfig` parameter in `install-config.yaml`.
+This approach simplifies deployment by eliminating manual base64-encoding and MachineConfig manifest creation.
+The installer automatically generates the necessary machine configurations and applies them during node bootstrap.
+
+.Prerequisites
+
+* You are installing OpenShift Container Platform version 4.19 or later. The `networking.hostConfig` parameter is not available in earlier versions.
+* You have configured DNS resolution for all node hostnames. Verify DNS before installation: `nslookup control-plane-0.example.com`. Each hostname used in `networking.hostConfig` must resolve correctly.
+* You have identified the physical network interfaces on each node that will be attached to the `br-ex` bridge.
+* You have created valid NMState YAML configurations for each node's networking requirements.
+* You have validated the NMState YAML syntax using `nmstatectl` (requires nmstate package installed on your workstation): `nmstatectl set --no-commit <nmstate-config.yml>`. This validates NMState semantics before embedding in install-config.
+
+.Procedure
+
+. Create a base `install-config.yaml` file with your cluster specifications:
++
+[source,terminal]
+----
+$ openshift-install create install-config --dir <installation_directory>
+----
+
+. Edit the `install-config.yaml` file to add the `networking.hostConfig` array.
++
+Before editing, create a backup of `install-config.yaml`:
++
+[source,terminal]
+----
+$ cp install-config.yaml install-config.yaml.backup
+----
++
+The installer consumes this file during cluster creation, so keep a backup for troubleshooting or cluster redeployment.
++
+Add the `networking.hostConfig` array:
++
+[source,yaml]
+----
+apiVersion: v1
+baseDomain: example.com
+metadata:
+  name: my-cluster
+networking:
+  hostConfig: []
+----
++
+Add an empty `hostConfig` array that you will populate in the next step.
+
+. For each node requiring custom `br-ex` configuration, add a `HostConfigEntry` with the node's hostname and network configuration.
++
+Replace `<hostname>` with the actual node hostname and provide the NMState configuration using YAML syntax.
+The `networkConfig` field uses YAML syntax (YAML is a superset of JSON).
+The installer parses this YAML and converts it internally to JSON when generating the MachineConfig:
++
+[source,yaml]
+----
+networking:
+  hostConfig:
+  - hostname: control-plane-0.example.com
+    networkConfig:
+      interfaces:
+      - name: br-ex
+        type: ovs-bridge
+        state: up
+        bridge:
+          options:
+            stp: false
+          port:
+          - name: eno1
+      - name: eno1
+        type: ethernet
+        state: up
+        ipv4:
+          enabled: false
+----
++
+The `ipv4.enabled: false` configuration on the physical interface is required to prevent IP address conflicts. When the interface is attached to the `br-ex` bridge, the bridge becomes the IP address holder, and the physical interface must not have its own IP configuration.
++
+[NOTE]
+====
+To configure multiple nodes with the same `br-ex` setup, add a separate `hostConfig` entry for each node hostname.
+For a 3-node control plane cluster, add three entries with identical `networkConfig` but different `hostname` values (control-plane-0.example.com, control-plane-1.example.com, control-plane-2.example.com).
+====
++
+--
+Where:
+
+`hostname`:: The fully qualified domain name or short hostname of the node. This must match the hostname assigned during installation and be resolvable via DNS.
+`networkConfig`:: The NMState network configuration in YAML syntax. This configuration defines the `br-ex` bridge and its attached physical interface.
+`eno1`:: The physical interface name that will be attached to the `br-ex` bridge. Replace with the actual interface name on the target node. The interface name `eno1` is an example. Your node may use different names such as `eth0`, `ens192`, or others depending on hardware. Use `ip link show` on the target node to determine actual interface names before creating NMState configurations.
+--
+
+. Validate the `install-config.yaml` file syntax to ensure the YAML is correctly formatted:
++
+[source,terminal]
+----
+$ yamllint install-config.yaml
+----
+
+. Run the OpenShift installer to deploy the cluster with the custom `br-ex` configurations:
++
+[source,terminal]
+----
+$ openshift-install create cluster --dir <installation_directory> --log-level=info
+----
++
+The installer generates `99-network-config-master` and `99-network-config-worker` MachineConfig objects containing the base64-encoded NMState configurations.
+During node bootstrap, the machine-config-daemon applies these configurations and places NMState YAML files in `/etc/nmstate/openshift/<hostname>.yml` on each matching node.
+
+. After the installation completes, verify the `br-ex` configuration was applied.
++
+SSH to the configured node or use `oc debug` and run:
++
+[source,terminal]
+----
+$ nmstatectl show br-ex
+----
++
+The output should show the bridge in state `up` with the expected port attached.
+If the bridge does not exist, see the troubleshooting procedure.
+
+.Verification
+
+After the installation completes, verify that the `br-ex` bridge was created successfully on the configured nodes.
+
+.Additional resources
+
+* xref:install-config-networking-hostconfig-reference_{context}[install-config networking.hostConfig parameter reference]
+* xref:verify-br-ex-install-config_{context}[Verify br-ex bridge configuration after installation]
+* xref:understanding-br-ex-configuration-methods_{context}[Understanding br-ex configuration methods]
