@@ -1,0 +1,23 @@
+:_mod-docs-content-type: ASSEMBLY
+include::_attributes/common-attributes.adoc[]
+:context: configure-network-bridges-virtualization
+[id="configure-network-bridges-virtualization"]
+= Configure network bridges for virtualization workloads
+
+[role="_abstract"]
+You can configure the `br-ex` bridge for virtualization workloads at installation time using the `networking.hostConfig` parameter in `install-config.yaml`.
+This approach simplifies deployment by eliminating manual base64-encoding and MachineConfig manifest creation for clusters that require custom network bridge configurations.
+
+include::modules/configure-network-bridges-virtualization-installation.adoc[leveloffset=+1]
+
+include::modules/understanding-br-ex-configuration-methods.adoc[leveloffset=+1]
+
+include::modules/install-config-networking-hostconfig-reference.adoc[leveloffset=+1]
+
+include::modules/configure-br-ex-install-config.adoc[leveloffset=+1]
+
+include::modules/comparison-br-ex-configuration-methods.adoc[leveloffset=+1]
+
+include::modules/verify-br-ex-install-config.adoc[leveloffset=+1]
+
+include::modules/troubleshoot-br-ex-install-config.adoc[leveloffset=+1]

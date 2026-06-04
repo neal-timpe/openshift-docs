@@ -1,0 +1,264 @@
+:_mod-docs-content-type: PROCEDURE
+[id="troubleshoot-br-ex-install-config_{context}"]
+= Troubleshoot br-ex install-config configuration issues
+
+[role="_abstract"]
+When the `br-ex` bridge is not created correctly after an installation using the `networking.hostConfig` parameter in `install-config.yaml`, you can diagnose and resolve common configuration issues.
+This procedure addresses the most frequent causes of `br-ex` configuration failures.
+
+.Prerequisites
+
+* You have attempted an OpenShift installation with `networking.hostConfig` entries in `install-config.yaml`.
+* You have completed the verification procedure and identified that the `br-ex` bridge was not created or has incorrect configuration.
+* You have `cluster-admin` access to the OpenShift cluster.
+
+.Procedure
+
+. Identify the specific issue by checking the verification steps:
++
+* If the NMState file does not exist at `/etc/nmstate/openshift/<hostname>.yml`, the hostname in the `hostConfig` entry may not match the actual node hostname.
+* If the `br-ex` bridge is not created, the NMState configuration may have syntax errors or invalid interface references.
+* If the machine-config was not applied, check the machine-config-daemon logs for errors.
+
+. *Issue: br-ex bridge not created on node*
++
+*Cause*: Hostname mismatch between the `hostConfig` entry and the actual node hostname.
++
+*Resolution*:
++
+.. Verify the node hostname:
++
+[source,terminal]
+----
+$ oc get nodes -o wide
+----
++
+Compare the hostnames shown in the output with the hostnames you specified in the `networking.hostConfig` entries.
+
+.. Verify DNS resolution for the hostname:
++
+[source,terminal]
+----
+$ nslookup <hostname>
+----
++
+The hostname must resolve correctly before installation.
+
+.. If the hostname does not match, follow the recovery workflow to redeploy the cluster:
++
+... Destroy the failed cluster deployment:
++
+[source,terminal]
+----
+$ openshift-install destroy cluster --dir <installation_directory>
+----
++
+[WARNING]
+====
+This destroys all cluster data.
+If the cluster is already in use, see the day-2 MachineConfig procedure instead.
+====
++
+... Correct the `install-config.yaml` file using the exact hostname shown in the `oc get nodes` output:
++
+[source,yaml]
+----
+networking:
+  hostConfig:
+  - hostname: correct-hostname.example.com
+    networkConfig:
+      # ... configuration ...
+----
++
+... Re-run the installation:
++
+[source,terminal]
+----
+$ openshift-install create cluster --dir <installation_directory>
+----
+
+. *Issue: Invalid NMState configuration errors in machine-config-daemon logs*
++
+*Cause*: NMState YAML syntax errors or invalid network interface references.
++
+*Resolution*:
++
+.. Review the machine-config-daemon logs for specific NMState errors:
++
+[source,terminal]
+----
+$ oc logs -n openshift-machine-config-operator -l k8s-app=machine-config-daemon --tail=200 | grep -A 10 -i "nmstate"
+----
+
+.. Validate the NMState YAML syntax outside the cluster before using it in `install-config.yaml`:
++
+[source,terminal]
+----
+$ nmstatectl set --no-commit nmstate-config.yml
+----
++
+This command validates the NMState syntax without applying changes.
+
+.. Verify that interface names in the `networkConfig` match the actual physical interfaces on the target node:
++
+[source,terminal]
+----
+$ oc debug node/<node_name>
+sh-4.4# chroot /host
+sh-4.4# ip link show
+----
++
+Compare the interface names in the output with the interface names in your `networkConfig`.
+
+.. Correct the `networkConfig` in `install-config.yaml` and redeploy the cluster following the recovery workflow described in step 3.
+
+. *Issue: Machine-config not applied to nodes*
++
+*Cause*: The machine-config-daemon failed to process the NMState configuration.
++
+*Resolution*:
++
+.. Check whether the machine-config objects were created:
++
+[source,terminal]
+----
+$ oc get machineconfigs | grep network-config
+----
+
+.. If the machine-configs exist but were not applied, check the machine-config-daemon status on the affected nodes:
++
+[source,terminal]
+----
+$ oc get machineconfigpool
+----
++
+Look for nodes in `UPDATING` or `DEGRADED` states.
+
+.. Review the machine-config-daemon logs for detailed error messages:
++
+[source,terminal]
+----
+$ oc logs -n openshift-machine-config-operator -l k8s-app=machine-config-daemon --tail=500
+----
+
+.. Verify that NMState files were placed in `/etc/nmstate/openshift/` on the node:
++
+[source,terminal]
+----
+$ oc debug node/<node_name>
+sh-4.4# chroot /host
+sh-4.4# ls /etc/nmstate/openshift/
+----
+
+. *Issue: br-ex bridge missing expected ports*
++
+*Cause*: Interface name in the NMState configuration does not match the physical interface on the node.
++
+*Resolution*:
++
+.. List the actual interfaces on the node:
++
+[source,terminal]
+----
+$ oc debug node/<node_name>
+sh-4.4# chroot /host
+sh-4.4# ip link show
+----
+
+.. Compare the interface names with the `networkConfig` in your `install-config.yaml`.
++
+The interface name in the bridge port configuration must match an actual interface on the node shown by `ip link show`:
++
+[source,yaml]
+----
+networkConfig:
+  interfaces:
+  - name: br-ex
+    type: ovs-bridge
+    bridge:
+      port:
+      - name: eno1
+----
+
+.. Correct the interface names in `install-config.yaml` and redeploy the cluster following the recovery workflow described in step 3.
+
+. *Issue: NMState reports interface already attached to another bridge*
++
+*Cause*: The specified interface (`eno1`) is already attached to another bridge or has an IP address assigned by the installer's default network configuration.
++
+*Resolution*:
++
+.. Use the `ipv4.enabled: false` configuration on the physical interface as shown in the examples.
++
+This ensures the interface is not referenced in any other network configuration files:
++
+[source,yaml]
+----
+networkConfig:
+  interfaces:
+  - name: eno1
+    type: ethernet
+    state: up
+    ipv4:
+      enabled: false
+  - name: br-ex
+    type: ovs-bridge
+    state: up
+    bridge:
+      port:
+      - name: eno1
+----
++
+.. Verify that the installer's default network configuration did not claim the interface before NMState ran.
++
+.. Correct the `install-config.yaml` and redeploy the cluster following the recovery workflow described in step 3.
+
+. *Issue: Node networking loss after br-ex configuration*
++
+*Cause*: Single-interface configuration errors caused the node to lose network connectivity.
++
+*Resolution*:
++
+.. Understand the automatic rollback behavior: If the NMState configuration causes network connectivity loss, the node may automatically roll back to the previous configuration after a timeout period.
+
+.. Access the node using the console (not SSH, which requires network connectivity):
++
+Use the platform's console access method to access the node directly.
+
+.. Check the NMState configuration for errors that could cause connectivity loss:
++
+[source,terminal]
+----
+sh-4.4# nmstatectl show
+----
+
+.. For single-interface configurations, ensure that the `br-ex` bridge is configured to share the interface without disrupting the host network.
++
+Disable IPv4 on the physical interface when attaching it to `br-ex` to avoid IP address conflicts:
++
+[source,yaml]
+----
+networkConfig:
+  interfaces:
+  - name: eno1
+    type: ethernet
+    state: up
+    ipv4:
+      enabled: false
+  - name: br-ex
+    type: ovs-bridge
+    state: up
+    bridge:
+      port:
+      - name: eno1
+----
+
+.Verification
+
+After resolving the issue and redeploying the cluster, verify the `br-ex` configuration using the verification procedure.
+
+.Additional resources
+
+* xref:verify-br-ex-install-config_{context}[Verify br-ex bridge configuration after installation]
+* xref:configure-br-ex-install-config_{context}[Configure br-ex bridge at installation using install-config.yaml]
+* link:https://nmstate.io/[NMState documentation]

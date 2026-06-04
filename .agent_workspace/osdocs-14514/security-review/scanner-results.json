@@ -1,0 +1,133 @@
+{
+  "command": "scan",
+  "summary": {
+    "files_scanned": 8,
+    "files_with_findings": 4,
+    "total_findings": 13,
+    "by_category": {
+      "url": 13
+    },
+    "by_severity": {
+      "warning": 13
+    }
+  },
+  "findings": [
+    {
+      "file": "modules/configure-br-ex-install-config.adoc",
+      "line": 13,
+      "category": "url",
+      "matched": "control-plane-0.example.com",
+      "context": "* You have configured DNS resolution for all node hostnames. Verify DNS before installation: `nslookup control-plane-0.example.com`. Each hostname used in `networking.hostConfig` must resolve correctly.",
+      "severity": "warning",
+      "suggestion": "Use example.com or a *.redhat.com domain"
+    },
+    {
+      "file": "modules/configure-br-ex-install-config.adoc",
+      "line": 62,
+      "category": "url",
+      "matched": "control-plane-0.example.com",
+      "context": "  - hostname: control-plane-0.example.com",
+      "severity": "warning",
+      "suggestion": "Use example.com or a *.redhat.com domain"
+    },
+    {
+      "file": "modules/configure-br-ex-install-config.adoc",
+      "line": 85,
+      "category": "url",
+      "matched": "control-plane-0.example.com",
+      "context": "For a 3-node control plane cluster, add three entries with identical `networkConfig` but different `hostname` values (control-plane-0.example.com, control-plane-1.example.com, control-plane-2.example.com).",
+      "severity": "warning",
+      "suggestion": "Use example.com or a *.redhat.com domain"
+    },
+    {
+      "file": "modules/configure-br-ex-install-config.adoc",
+      "line": 85,
+      "category": "url",
+      "matched": "control-plane-1.example.com",
+      "context": "For a 3-node control plane cluster, add three entries with identical `networkConfig` but different `hostname` values (control-plane-0.example.com, control-plane-1.example.com, control-plane-2.example.com).",
+      "severity": "warning",
+      "suggestion": "Use example.com or a *.redhat.com domain"
+    },
+    {
+      "file": "modules/configure-br-ex-install-config.adoc",
+      "line": 85,
+      "category": "url",
+      "matched": "control-plane-2.example.com",
+      "context": "For a 3-node control plane cluster, add three entries with identical `networkConfig` but different `hostname` values (control-plane-0.example.com, control-plane-1.example.com, control-plane-2.example.com).",
+      "severity": "warning",
+      "suggestion": "Use example.com or a *.redhat.com domain"
+    },
+    {
+      "file": "modules/verify-br-ex-install-config.adoc",
+      "line": 42,
+      "category": "url",
+      "matched": "control-plane-0.example.com",
+      "context": "For example, if your `hostConfig` entry uses hostname `control-plane-0.example.com`, the file path will be `/etc/nmstate/openshift/control-plane-0.example.com.yml`.",
+      "severity": "warning",
+      "suggestion": "Use example.com or a *.redhat.com domain"
+    },
+    {
+      "file": "modules/troubleshoot-br-ex-install-config.adoc",
+      "line": 68,
+      "category": "url",
+      "matched": "correct-hostname.example.com",
+      "context": "  - hostname: correct-hostname.example.com",
+      "severity": "warning",
+      "suggestion": "Use example.com or a *.redhat.com domain"
+    },
+    {
+      "file": "modules/troubleshoot-br-ex-install-config.adoc",
+      "line": 264,
+      "category": "url",
+      "matched": "link:https://nmstate.io",
+      "context": "* link:https://nmstate.io/[NMState documentation]",
+      "severity": "warning",
+      "suggestion": "Use example.com or a *.redhat.com domain"
+    },
+    {
+      "file": "modules/install-config-networking-hostconfig-reference.adoc",
+      "line": 72,
+      "category": "url",
+      "matched": "control-plane-0.example.com",
+      "context": "  - hostname: control-plane-0.example.com",
+      "severity": "warning",
+      "suggestion": "Use example.com or a *.redhat.com domain"
+    },
+    {
+      "file": "modules/install-config-networking-hostconfig-reference.adoc",
+      "line": 90,
+      "category": "url",
+      "matched": "control-plane-0.example.com",
+      "context": "In this example, the installer creates a `br-ex` bridge on `control-plane-0.example.com` that shares the `eno1` physical interface.",
+      "severity": "warning",
+      "suggestion": "Use example.com or a *.redhat.com domain"
+    },
+    {
+      "file": "modules/install-config-networking-hostconfig-reference.adoc",
+      "line": 101,
+      "category": "url",
+      "matched": "worker-0.example.com",
+      "context": "  - hostname: worker-0.example.com",
+      "severity": "warning",
+      "suggestion": "Use example.com or a *.redhat.com domain"
+    },
+    {
+      "file": "modules/install-config-networking-hostconfig-reference.adoc",
+      "line": 120,
+      "category": "url",
+      "matched": "worker-1.example.com",
+      "context": "  - hostname: worker-1.example.com",
+      "severity": "warning",
+      "suggestion": "Use example.com or a *.redhat.com domain"
+    },
+    {
+      "file": "modules/install-config-networking-hostconfig-reference.adoc",
+      "line": 160,
+      "category": "url",
+      "matched": "link:https://nmstate.io",
+      "context": "* link:https://nmstate.io/[NMState documentation]",
+      "severity": "warning",
+      "suggestion": "Use example.com or a *.redhat.com domain"
+    }
+  ]
+}

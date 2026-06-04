@@ -1,0 +1,53 @@
+:_mod-docs-content-type: CONCEPT
+[id="configure-network-bridges-virtualization-installation_{context}"]
+= Configure network bridges for virtualization at installation time
+
+[role="_abstract"]
+Virtualization workloads require custom network bridge configurations to provide external network connectivity for virtual machines.
+You can configure the `br-ex` bridge at installation time using the `networking.hostConfig` parameter in `install-config.yaml`, which simplifies deployment for single-interface configurations and eliminates manual manifest creation.
+
+== Why custom br-ex configurations are needed
+
+OpenShift Virtualization uses the `br-ex` bridge to provide external network connectivity for virtual machines.
+In standard OpenShift deployments, the `br-ex` bridge is created automatically on nodes, but it may not be configured correctly for virtualization workloads, especially in single-interface deployments.
+
+Single-interface deployments, where the node has only one physical network interface, require the `br-ex` bridge to share that interface with the host network.
+This configuration ensures that both the host and virtual machines can access external networks using the same physical interface.
+Without proper configuration, VMs cannot communicate with networks outside the cluster.
+
+== Configuration methods available
+
+OpenShift provides two methods for configuring the `br-ex` bridge using NMState:
+
+* **install-config.yaml method (day 1)**: Specify NMState configurations directly in the `networking.hostConfig` parameter of `install-config.yaml`. The installer automatically generates MachineConfig objects and applies them during node bootstrap.
+
+* **MachineConfig manifests method (day 2)**: Manually create base64-encoded MachineConfig manifests and place them in the installer's manifests directory before installation, or apply MachineConfig changes to running clusters.
+
+For new cluster installations, the `install-config.yaml` method is recommended because it simplifies configuration and reduces manual errors.
+
+== High-level workflow
+
+The installation-time configuration workflow consists of these steps:
+
+. *Plan node networking*: Identify which nodes require custom `br-ex` configurations and determine the physical interfaces to use.
+. *Create NMState YAML*: Define the bridge configuration for each node using NMState syntax.
+. *Configure install-config.yaml*: Add the `networking.hostConfig` array with per-node `hostname` and `networkConfig` entries.
+. *Run the installer*: The installer automatically generates MachineConfig objects and applies them during bootstrap.
+. *Verify configuration*: After installation, verify the `br-ex` bridge was created correctly on each node.
+
+== How the product helps
+
+The `networking.hostConfig` parameter in `install-config.yaml` eliminates several manual steps that were previously required:
+
+* **Automatic base64-encoding**: The installer encodes NMState YAML automatically, eliminating encoding errors.
+* **MachineConfig generation**: The installer creates `99-network-config-master` and `99-network-config-worker` MachineConfig objects without manual intervention.
+* **File placement**: The installer places NMState YAML files in `/etc/nmstate/openshift/<hostname>.yml` on each matching node during bootstrap.
+
+This automation reduces deployment complexity, accelerates installation, and provides an experience consistent with other installation customization options such as proxy settings and SSH keys.
+
+.Additional resources
+
+* xref:understanding-br-ex-configuration-methods_{context}[Understanding br-ex configuration methods]
+* xref:configure-br-ex-install-config_{context}[Configure br-ex bridge at installation using install-config.yaml]
+* xref:comparison-br-ex-configuration-methods_{context}[Comparison: install-config vs MachineConfig methods for br-ex]
+* xref:verify-br-ex-install-config_{context}[Verify br-ex bridge configuration after installation]

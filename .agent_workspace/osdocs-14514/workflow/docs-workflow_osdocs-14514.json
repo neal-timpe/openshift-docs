@@ -1,0 +1,82 @@
+{
+  "workflow_type": "docs-workflow",
+  "ticket": "OSDOCS-14514",
+  "base_path": "/Users/ntimpe/Documents/Github/openshift-docs-neal-fork/.agent_workspace/osdocs-14514",
+  "status": "completed",
+  "created_at": "2026-06-04T00:00:00Z",
+  "updated_at": "2026-06-04T00:00:00Z",
+  "options": {
+    "format": "adoc",
+    "draft": false,
+    "create_merge_request": false,
+    "pr_urls": [],
+    "source": null,
+    "additional_sources": []
+  },
+  "step_order": ["requirements", "planning", "writing", "technical-review", "style-review", "security-review", "create-merge-request"],
+  "steps": {
+    "requirements": {
+      "status": "completed",
+      "output": "/Users/ntimpe/Documents/Github/openshift-docs-neal-fork/.agent_workspace/osdocs-14514/requirements",
+      "result": {
+        "title": "Documentation Requirements"
+      }
+    },
+    "planning": {
+      "status": "completed",
+      "output": "/Users/ntimpe/Documents/Github/openshift-docs-neal-fork/.agent_workspace/osdocs-14514/planning",
+      "result": {
+        "module_count": 7
+      }
+    },
+    "writing": {
+      "status": "completed",
+      "output": "/Users/ntimpe/Documents/Github/openshift-docs-neal-fork/.agent_workspace/osdocs-14514/writing",
+      "result": {
+        "files": [
+          "/Users/ntimpe/Documents/Github/openshift-docs-neal-fork/.agent_workspace/osdocs-14514/writing/modules/configure-network-bridges-virtualization-installation.adoc",
+          "/Users/ntimpe/Documents/Github/openshift-docs-neal-fork/.agent_workspace/osdocs-14514/writing/modules/understanding-br-ex-configuration-methods.adoc",
+          "/Users/ntimpe/Documents/Github/openshift-docs-neal-fork/.agent_workspace/osdocs-14514/writing/modules/install-config-networking-hostconfig-reference.adoc",
+          "/Users/ntimpe/Documents/Github/openshift-docs-neal-fork/.agent_workspace/osdocs-14514/writing/modules/configure-br-ex-install-config.adoc",
+          "/Users/ntimpe/Documents/Github/openshift-docs-neal-fork/.agent_workspace/osdocs-14514/writing/modules/comparison-br-ex-configuration-methods.adoc",
+          "/Users/ntimpe/Documents/Github/openshift-docs-neal-fork/.agent_workspace/osdocs-14514/writing/modules/verify-br-ex-install-config.adoc",
+          "/Users/ntimpe/Documents/Github/openshift-docs-neal-fork/.agent_workspace/osdocs-14514/writing/modules/troubleshoot-br-ex-install-config.adoc",
+          "/Users/ntimpe/Documents/Github/openshift-docs-neal-fork/.agent_workspace/osdocs-14514/writing/assembly_configure-network-bridges-virtualization.adoc"
+        ],
+        "mode": "draft",
+        "format": "adoc"
+      }
+    },
+    "technical-review": {
+      "status": "completed",
+      "output": "/Users/ntimpe/Documents/Github/openshift-docs-neal-fork/.agent_workspace/osdocs-14514/technical-review",
+      "result": {
+        "confidence": "MEDIUM",
+        "severity_counts": {
+          "critical": 6,
+          "significant": 7,
+          "minor": 8,
+          "sme": 7
+        }
+      }
+    },
+    "style-review": {
+      "status": "completed",
+      "output": "/Users/ntimpe/Documents/Github/openshift-docs-neal-fork/.agent_workspace/osdocs-14514/style-review",
+      "result": {}
+    },
+    "security-review": {
+      "status": "completed",
+      "output": "/Users/ntimpe/Documents/Github/openshift-docs-neal-fork/.agent_workspace/osdocs-14514/security-review",
+      "result": {
+        "scanner_findings": 13,
+        "critical_findings": 0
+      }
+    },
+    "create-merge-request": {
+      "status": "skipped",
+      "output": null,
+      "result": null
+    }
+  }
+}

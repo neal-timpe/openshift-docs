@@ -1,0 +1,68 @@
+:_mod-docs-content-type: REFERENCE
+[id="comparison-br-ex-configuration-methods_{context}"]
+= Comparison: install-config vs MachineConfig methods for br-ex
+
+[role="_abstract"]
+This comparison helps you choose between the `install-config.yaml` method and the MachineConfig manifests method for configuring the `br-ex` bridge using NMState.
+Both methods produce identical results, but they differ in complexity, timing, and user experience.
+
+.Comparison of br-ex configuration methods
+[cols="2,3,3",options="header"]
+|===
+|Aspect
+|install-config.yaml method
+|MachineConfig manifests method
+
+|**When to use**
+|Day 1 installation-time configuration for new clusters
+|Post-installation changes (day 2) or advanced scenarios requiring runtime modification
+
+|**Complexity**
+|Simplified. Specify NMState YAML directly in `install-config.yaml` under `networking.hostConfig`. The installer handles encoding and manifest generation automatically.
+|More complex. Requires manual base64-encoding of NMState YAML and creation of MachineConfig manifest files in the installer's manifests directory.
+
+|**User experience**
+|Consistent with other `install-config.yaml` options (proxy settings, SSH keys, platform-specific configurations). Reduces configuration errors from manual encoding.
+|Multiple manual steps increase the risk of encoding errors and manifest formatting mistakes.
+
+|**File placement**
+|Automatic. The installer generates `99-network-config-master` and `99-network-config-worker` MachineConfig objects and places NMState YAML files in `/etc/nmstate/openshift/<hostname>.yml`.
+|Manual. You create MachineConfig manifests and place them in the installer's manifests directory before running the installation.
+
+|**Use cases**
+|Standard deployments, VMware migrations, any installation requiring per-node `br-ex` configuration known in advance.
+|Day 2 network changes on running clusters, complex staged configurations, scenarios requiring direct MachineConfig control.
+
+|**Result**
+|NMState files placed at `/etc/nmstate/openshift/<hostname>.yml` on matching nodes. Identical outcome to MachineConfig method.
+|NMState files placed at `/etc/nmstate/openshift/<hostname>.yml` on matching nodes. Identical outcome to install-config method.
+
+|**OpenShift version**
+|Available in OpenShift 4.19 and later.
+|Available in all OpenShift versions supporting NMState.
+
+|**Post-installation changes**
+|Not supported. Network configuration changes after installation require MachineConfig objects or NodeNetworkConfigurationPolicy resources.
+|Supported. You can apply MachineConfig changes to running clusters.
+
+|===
+
+== Recommendation
+
+For new cluster installations in OpenShift 4.19 and later where you know the network topology in advance, use the `networking.hostConfig` parameter in `install-config.yaml`.
+This method simplifies deployment, reduces manual errors, and aligns with how you configure other installation-time customizations.
+
+For post-installation network changes on existing clusters, use MachineConfig objects or NodeNetworkConfigurationPolicy resources.
+The `install-config.yaml` method applies only at installation time and cannot modify network configurations on running clusters.
+
+== Migration note
+
+Existing clusters using MachineConfig-based `br-ex` configurations continue to work correctly.
+No migration is required.
+The `install-config.yaml` method is an alternative deployment approach, not a replacement for day 2 configuration management.
+
+.Additional resources
+
+* xref:understanding-br-ex-configuration-methods_{context}[Understanding br-ex configuration methods]
+* xref:configure-br-ex-install-config_{context}[Configure br-ex bridge at installation using install-config.yaml]
+* xref:install-config-networking-hostconfig-reference_{context}[install-config networking.hostConfig parameter reference]

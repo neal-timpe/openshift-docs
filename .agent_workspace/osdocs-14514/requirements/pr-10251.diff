@@ -1,0 +1,288 @@
+diff --git a/data/data/install.openshift.io_installconfigs.yaml b/data/data/install.openshift.io_installconfigs.yaml
+index 72d43dfd6e0..0882a6b045e 100644
+--- a/data/data/install.openshift.io_installconfigs.yaml
++++ b/data/data/install.openshift.io_installconfigs.yaml
+@@ -4430,6 +4430,27 @@ spec:
+                   - cidr
+                   type: object
+                 type: array
++              hostConfig:
++                description: |-
++                  HostConfig is a list of NMState configs defining br-ex for the nodes in the cluster.
++                  Each entry is a pair of fields: The short hostname of the node and the contents of
++                  the NMState config to be applied to that node.
++                items:
++                  description: HostConfigEntry is a pair of fields specifying the
++                    NMState config to be applied to a node
++                  properties:
++                    hostname:
++                      description: Hostname is the short hostname of the node
++                      type: string
++                    networkConfig:
++                      description: NetworkConfig is the NMState YAML to be applied
++                        to the node specified by the Hostname field
++                      x-kubernetes-preserve-unknown-fields: true
++                  required:
++                  - hostname
++                  - networkConfig
++                  type: object
++                type: array
+               machineCIDR:
+                 description: |-
+                   Deprecated way to configure an IP address pool for machines.
+diff --git a/pkg/asset/machines/machineconfig/networkconfig.go b/pkg/asset/machines/machineconfig/networkconfig.go
+new file mode 100644
+index 00000000000..744cdd975d2
+--- /dev/null
++++ b/pkg/asset/machines/machineconfig/networkconfig.go
+@@ -0,0 +1,70 @@
++package machineconfig
++
++import (
++	"encoding/base64"
++	"fmt"
++
++	igntypes "github.com/coreos/ignition/v2/config/v3_2/types"
++	ignutil "github.com/coreos/ignition/v2/config/util"
++	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
++	"sigs.k8s.io/yaml"
++
++	mcfgv1 "github.com/openshift/api/machineconfiguration/v1"
++	"github.com/openshift/installer/pkg/asset/ignition"
++	"github.com/openshift/installer/pkg/types"
++)
++
++// ForNetworkConfig creates the MachineConfig to configure network settings.
++func ForNetworkConfig(role string, configs []types.HostConfigEntry) (*mcfgv1.MachineConfig, error) {
++	files := []igntypes.File{}
++	for _, config := range configs{
++		yamlNetworkConfig, err := yaml.Marshal(config.NetworkConfig)
++		if err != nil {
++			return nil, err
++		}
++		encoded := base64.StdEncoding.EncodeToString([]byte(yamlNetworkConfig))
++		source := fmt.Sprintf("data:text/plain;charset=utf-8;base64,%s", encoded)
++		file := igntypes.File{
++			Node: igntypes.Node{
++				Path: fmt.Sprintf("/etc/nmstate/openshift/%s.yml", config.Hostname),
++			},
++			FileEmbedded1: igntypes.FileEmbedded1{
++				Contents: igntypes.Resource{
++					Source: ignutil.StrToPtr(source),
++				},
++				Mode: ignutil.IntToPtr(0644),
++			},
++		}
++		files = append(files, file)
++	}
++
++	ignConfig := igntypes.Config{
++		Ignition: igntypes.Ignition{
++			Version: igntypes.MaxVersion.String(),
++		},
++		Storage: igntypes.Storage{
++			Files: files,
++		},
++	}
++
++	rawExt, err := ignition.ConvertToRawExtension(ignConfig)
++	if err != nil {
++		return nil, err
++	}
++
++	return &mcfgv1.MachineConfig{
++		TypeMeta: metav1.TypeMeta{
++			APIVersion: mcfgv1.SchemeGroupVersion.String(),
++			Kind:       "MachineConfig",
++		},
++		ObjectMeta: metav1.ObjectMeta{
++			Name: fmt.Sprintf("99-network-config-%s", role),
++			Labels: map[string]string{
++				"machineconfiguration.openshift.io/role": role,
++			},
++		},
++		Spec: mcfgv1.MachineConfigSpec{
++			Config: rawExt,
++		},
++	}, nil
++}
+diff --git a/pkg/asset/machines/master.go b/pkg/asset/machines/master.go
+index 22364602b5b..d553b0b2dc9 100644
+--- a/pkg/asset/machines/master.go
++++ b/pkg/asset/machines/master.go
+@@ -86,6 +86,10 @@ type Master struct {
+ 	// store the networking configuration per host
+ 	NetworkConfigSecretFiles []*asset.File
+ 
++	// NetworkConfigManifests is used to apply NMState configs for
++	// creating br-ex on the host
++	NetworkConfigManifests []*asset.File
++
+ 	// HostFiles is the list of baremetal hosts provided in the
+ 	// installer configuration.
+ 	HostFiles []*asset.File
+@@ -108,6 +112,8 @@ const (
+ 	// clusters.
+ 	networkConfigSecretFileName = "99_openshift-cluster-api_host-network-config-secrets-%s.yaml"
+ 
++	masterNetworkConfigManifestFileName = "99_openshift-machine-config-operator_master-host-network-config-manifests-%s.yaml"
++
+ 	// hostFileName is the format string for constucting the Host
+ 	// filenames for baremetal clusters.
+ 	hostFileName = "99_openshift-cluster-api_hosts-%s.yaml"
+@@ -135,9 +141,10 @@ const (
+ )
+ 
+ var (
+-	secretFileNamePattern              = fmt.Sprintf(secretFileName, "*")
+-	networkConfigSecretFileNamePattern = fmt.Sprintf(networkConfigSecretFileName, "*")
+-	hostFileNamePattern                = fmt.Sprintf(hostFileName, "*")
++	secretFileNamePattern                      = fmt.Sprintf(secretFileName, "*")
++	networkConfigSecretFileNamePattern         = fmt.Sprintf(networkConfigSecretFileName, "*")
++	masterNetworkConfigManifestFileNamePattern = fmt.Sprintf(masterNetworkConfigManifestFileName, "*")
++	hostFileNamePattern                        = fmt.Sprintf(hostFileName, "*")
+ 	masterMachineFileNamePattern       = fmt.Sprintf(masterMachineFileName, "*")
+ 	masterIPClaimFileNamePattern       = fmt.Sprintf(ipClaimFileName, "*master*")
+ 	masterIPAddressFileNamePattern     = fmt.Sprintf(ipAddressFileName, "*master*")
+@@ -664,6 +671,15 @@ func (m *Master) Generate(ctx context.Context, dependencies asset.Parents) error
+ 		}
+ 	}
+ 
++	// Create MachineConfigs from provided NMState configuration
++	if ic.Networking != nil && ic.Networking.HostConfig != nil {
++		hostConfig, err := machineconfig.ForNetworkConfig("master", ic.Networking.HostConfig)
++		if err != nil {
++			return errors.Wrap(err, "failed to create ignition to apply NMState configs for master machines")
++		}
++		machineConfigs = append(machineConfigs, hostConfig)
++	}
++
+ 	m.MachineConfigFiles, err = machineconfig.Manifests(machineConfigs, "master", directory)
+ 	if err != nil {
+ 		return errors.Wrap(err, "failed to create MachineConfig manifests for master machines")
+@@ -778,6 +794,7 @@ func (m *Master) Files() []*asset.File {
+ 	// to avoid unnecessary reconciliation errors.
+ 	files = append(files, m.SecretFiles...)
+ 	files = append(files, m.NetworkConfigSecretFiles...)
++	files = append(files, m.NetworkConfigManifests...)
+ 	// Machines are linked to hosts via the machineRef, so we create
+ 	// the hosts first to ensure if the operator starts trying to
+ 	// reconcile a machine it can pick up the related host.
+@@ -948,6 +965,7 @@ func IsMachineManifest(file *asset.File) bool {
+ 	}{
+ 		{Pattern: secretFileNamePattern, Type: "secret"},
+ 		{Pattern: networkConfigSecretFileNamePattern, Type: "network config secret"},
++		{Pattern: masterNetworkConfigManifestFileNamePattern, Type: "network config manifest"},
+ 		{Pattern: hostFileNamePattern, Type: "host"},
+ 		{Pattern: masterMachineFileNamePattern, Type: "master machine"},
+ 		{Pattern: workerMachineSetFileNamePattern, Type: "worker machineset"},
+diff --git a/pkg/asset/machines/worker.go b/pkg/asset/machines/worker.go
+index 8ca2c20e24d..5da871a297a 100644
+--- a/pkg/asset/machines/worker.go
++++ b/pkg/asset/machines/worker.go
+@@ -78,6 +78,8 @@ const (
+ 	// workerUserDataFileName is the filename used for the worker user-data secret.
+ 	workerUserDataFileName = "99_openshift-cluster-api_worker-user-data-secret.yaml"
+ 
++	workerNetworkConfigManifestFileName = "99_openshift-machine-config-operator_worker-host-network-config-manifests-%s.yaml"
++
+ 	// decimalRootVolumeSize is the size in GB we use for some platforms.
+ 	// See below.
+ 	decimalRootVolumeSize = 120
+@@ -94,6 +96,7 @@ var (
+ 	workerMachineFileNamePattern    = fmt.Sprintf(workerMachineFileName, "*")
+ 	workerIPClaimFileNamePattern    = fmt.Sprintf(ipClaimFileName, "*worker*")
+ 	workerIPAddressFileNamePattern  = fmt.Sprintf(ipAddressFileName, "*worker*")
++	workerNetworkConfigManifestFileNamePattern  = fmt.Sprintf(workerNetworkConfigManifestFileName, "*")
+ 
+ 	_ asset.WritableAsset = (*Worker)(nil)
+ )
+@@ -289,6 +292,10 @@ type Worker struct {
+ 	MachineFiles       []*asset.File
+ 	IPClaimFiles       []*asset.File
+ 	IPAddrFiles        []*asset.File
++
++	// NetworkConfigManifests is used to apply NMState configs for
++	// creating br-ex on the host
++	NetworkConfigManifests []*asset.File
+ }
+ 
+ // Name returns a human friendly name for the Worker Asset.
+@@ -446,6 +453,15 @@ func (w *Worker) Generate(ctx context.Context, dependencies asset.Parents) error
+ 			machineConfigs = append(machineConfigs, ignIPv6)
+ 		}
+ 
++		// Create MachineConfigs from provided NMState configuration
++		if ic.Networking != nil && ic.Networking.HostConfig != nil {
++			hostConfig, err := machineconfig.ForNetworkConfig("worker", ic.Networking.HostConfig)
++			if err != nil {
++				return errors.Wrap(err, "failed to create ignition to apply NMState configs for master machines")
++			}
++			machineConfigs = append(machineConfigs, hostConfig)
++		}
++
+ 		switch ic.Platform.Name() {
+ 		case awstypes.Name:
+ 			var subnets icaws.SubnetsByZone
+@@ -852,6 +868,7 @@ func (w *Worker) Files() []*asset.File {
+ 		files = append(files, w.UserDataFile)
+ 	}
+ 	files = append(files, w.MachineConfigFiles...)
++	files = append(files, w.NetworkConfigManifests...)
+ 	files = append(files, w.MachineSetFiles...)
+ 	files = append(files, w.MachineFiles...)
+ 	files = append(files, w.IPClaimFiles...)
+@@ -900,6 +917,12 @@ func (w *Worker) Load(f asset.FileFetcher) (found bool, err error) {
+ 	}
+ 	w.IPAddrFiles = fileList
+ 
++	fileList, err = f.FetchByPattern(filepath.Join(directory, workerNetworkConfigManifestFileNamePattern))
++	if err != nil {
++		return true, err
++	}
++	w.NetworkConfigManifests = fileList
++
+ 	return true, nil
+ }
+ 
+diff --git a/pkg/types/installconfig.go b/pkg/types/installconfig.go
+index 6baca04a5b1..8931faa6ef3 100644
+--- a/pkg/types/installconfig.go
++++ b/pkg/types/installconfig.go
+@@ -4,6 +4,7 @@ import (
+ 	"fmt"
+ 	"strings"
+ 
++	apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+ 	"github.com/sirupsen/logrus"
+ 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+ 	"k8s.io/apimachinery/pkg/util/sets"
+@@ -412,6 +413,12 @@ type Networking struct {
+ 	// pod network when NetworkType is set to OVNKubernetes.
+ 	OVNKubernetesConfig *OVNKubernetesConfig `json:"ovnKubernetesConfig,omitempty"`
+ 
++	// HostConfig is a list of NMState configs defining br-ex for the nodes in the cluster.
++	// Each entry is a pair of fields: The short hostname of the node and the contents of
++	// the NMState config to be applied to that node.
++	// +optional
++	HostConfig []HostConfigEntry `json:"hostConfig,omitempty"`
++
+ 	// Deprecated types, scheduled to be removed
+ 
+ 	// Deprecated way to configure an IP address pool for machines.
+@@ -482,6 +489,15 @@ type IPv4OVNKubernetesConfig struct {
+ 	InternalJoinSubnet *ipnet.IPNet `json:"internalJoinSubnet,omitempty"`
+ }
+ 
++// HostConfigEntry is a pair of fields specifying the NMState config to be applied to a node
++type HostConfigEntry struct {
++	// Hostname is the short hostname of the node
++	Hostname string `json:"hostname"`
++
++	// NetworkConfig is the NMState YAML to be applied to the node specified by the Hostname field
++	NetworkConfig *apiextv1.JSON   `json:"networkConfig"`
++}
++
+ // Proxy defines the proxy settings for the cluster.
+ // At least one of HTTPProxy or HTTPSProxy is required.
+ type Proxy struct {
