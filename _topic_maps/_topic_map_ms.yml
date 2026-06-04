@@ -127,10 +127,6 @@ Topics:
   File: microshift-using-config-yaml
 - Name: Using configuration snippets
   File: microshift-config-snippets
-- Name: Configuring IPv6 networking
-  File: microshift-nw-ipv6-config
-- Name: Using ingress control for a MicroShift node
-  File: microshift-ingress-controller
 - Name: Disabling LVMS CSI provider and CSI snapshot
   File: microshift-disable-lvms-csi-provider-csi-snapshot
 - Name: Checking the status of greenboot health checks
@@ -139,19 +135,25 @@ Topics:
   File: microshift-node-access-kubeconfig
 - Name: About the Generic Device Plugin
   File: microshift-gdp
-- Name: Using feature gates to develop solutions
+- Name: Test new Kubernetes features
   File: microshift-feature-gates
-- Name: Configuring MicroShift authentication and security
+- Name: Securing MicroShift
   Dir: microshift_auth_security
   Topics:
-  - Name: Using custom certificate authorities
-    File: microshift-custom-ca
-  - Name: Configuring TLS security profiles
-    File: microshift-tls-config
-  - Name: Configuring audit logging policies
-    File: microshift-audit-logs-config
-  - Name: Verifying container signatures for supply chain security
-    File: microshift-verify-container-signatures
+  - Name: Secure the MicroShift API and Control Plane
+    Topics:
+    - Name: Configure custom certificate authorities
+      File: microshift-custom-ca
+    - Name: Configuring TLS security profiles
+      File: microshift-tls-config
+  - Name: Configure audit logging
+    Topics:
+    - Name: Configuring audit logging policies
+      File: microshift-audit-logs-config
+  - Name: Verify trusted container images
+    Topics:
+    - Name: Verifying container signatures for supply chain security
+      File: microshift-verify-container-signatures
 - Name: Configuring low latency
   Dir: microshift_low_latency
   Topics:
@@ -160,31 +162,33 @@ Topics:
   - Name: Workload partitioning
     File: microshift-workload-partitioning
 ---
-Name: Networking
+Name: Configure networking
 Dir: microshift_networking
 Distros: microshift
 Topics:
-- Name: About the networking plugin
+- Name: Understand and configure the default networking model
   File: microshift-cni
 - Name: Using networking settings
   File: microshift-networking-settings
-- Name: Configuring the router
-  File: microshift-nw-router
-- Name: Configuring the SR-IOV network operator
-  File: microshift-sriov
-- Name: Network policies
-  Dir: microshift_network_policy
+- Name: Expose applications externally
   Topics:
-  - Name: About network policies
-    File: microshift-network-policy-index
-  - Name: Creating network policies
-    File: microshift-creating-network-policy
-  - Name: Editing network policies
-    File: microshift-editing-network-policy
-  - Name: Deleting network policies
-    File: microshift-deleting-network-policy
-  - Name: Viewing network policies
-    File: microshift-viewing-network-policy
+  - Name: Configure the router and network ingress
+    File: microshift-nw-router
+  - Name: Configuring routes
+    File: microshift-configuring-routes
+- Name: Secure and control traffic
+  Topics:
+  - Name: Firewall configuration
+    File: microshift-firewall
+  - Name: Network policies
+    Dir: microshift_network_policy
+    Topics:
+    - Name: About network policies
+      File: microshift-network-policy-index
+    - Name: Creating network policies
+      File: microshift-creating-network-policy
+    - Name: Managing network policies
+      File: microshift-editing-network-policy
 - Name: Multiple networks
   Dir: microshift_multiple_networks
   Topics:
@@ -192,18 +196,18 @@ Topics:
     File: microshift-cni-multus
   - Name: Configuring and using multiple networks
     File: microshift-cni-multus-using
-- Name: Configuring routes
-  File: microshift-configuring-routes
-- Name: Firewall configuration
-  File: microshift-firewall
+- Name: Configuring the SR-IOV network operator
+  File: microshift-sriov
+- Name: Configuring IPv6 networking
+  File: microshift-nw-ipv6-config
 - Name: Networking settings for fully disconnected hosts
   File: microshift-disconnected-network-config
 ---
-Name: Storage
+Name: Configure storage
 Dir: microshift_storage
 Distros: microshift
 Topics:
-- Name: Storage
+- Name: MicroShift storage options
   File: index
 - Name: Using dynamic storage with the LVMS plugin
   File: microshift-storage-plugin-overview

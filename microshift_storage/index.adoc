@@ -1,6 +1,6 @@
 :_mod-docs-content-type: ASSEMBLY
 [id="storage-overview-microshift"]
-= Storage overview
+= MicroShift storage options
 include::_attributes/attributes-microshift.adoc[]
 :context: storage-overview-microshift
 

@@ -18,9 +18,7 @@ Greenboot health checks run at various times to assess system health and automat
 
 A {microshift-short} application health check script is included in the `microshift-greenboot` RPM. The `greenboot-default-health-checks` RPM includes health check scripts verifying that DNS and `ostree` services are accessible. You can create your own health check scripts for the workloads you are running. You can write one that verifies that an application has started, for example.
 
-include::modules/microshift-greenboot-dir-structure.adoc[leveloffset=+1]
-
-include::modules/microshift-greenboot-directories-details.adoc[leveloffset=+2]
+include::modules/microshift-greenboot-directories-details.adoc[leveloffset=+1]
 
 include::modules/microshift-greenboot-included-health-checks.adoc[leveloffset=+1]
 

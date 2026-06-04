@@ -1,6 +1,6 @@
 :_mod-docs-content-type: ASSEMBLY
 [id="microshift-sriov"]
-= Using the SR-IOV Network Operator
+= Configuring the SR-IOV network operator
 include::_attributes/attributes-microshift.adoc[]
 :context: microshift-SRIOV-plugin
 
