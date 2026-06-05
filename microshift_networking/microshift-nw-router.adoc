@@ -1,6 +1,6 @@
 :_mod-docs-content-type: ASSEMBLY
 [id="microshift-understanding-and-configuring-router"]
-= Understanding and configuring the router
+= Configure the router and network ingress
 include::_attributes/attributes-microshift.adoc[]
 :context: microshift-nw-router
 
