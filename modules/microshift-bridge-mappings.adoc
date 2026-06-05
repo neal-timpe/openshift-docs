@@ -4,7 +4,7 @@
 
 :_mod-docs-content-type: REFERENCE
 [id="microshift-bridge-mappings_{context}"]
-= Bridge mappings
+= How traffic flows through the system
 
 [role="_abstract"]
 Understand how provider network traffic reaches the physical network through bridge mappings. The following concepts apply:

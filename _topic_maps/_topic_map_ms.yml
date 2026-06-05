@@ -164,27 +164,42 @@ Name: Networking
 Dir: microshift_networking
 Distros: microshift
 Topics:
-- Name: About the networking plugin
-  File: microshift-cni
-- Name: Using networking settings
-  File: microshift-networking-settings
-- Name: Configuring the router
-  File: microshift-nw-router
-- Name: Configuring the SR-IOV network operator
-  File: microshift-sriov
-- Name: Network policies
-  Dir: microshift_network_policy
+- Name: Configure networking
+  Dir: microshift_configure_networking
   Topics:
-  - Name: About network policies
-    File: microshift-network-policy-index
-  - Name: Creating network policies
-    File: microshift-creating-network-policy
-  - Name: Editing network policies
-    File: microshift-editing-network-policy
-  - Name: Deleting network policies
-    File: microshift-deleting-network-policy
-  - Name: Viewing network policies
-    File: microshift-viewing-network-policy
+  - Name: Understand and configure the default networking model
+    File: microshift-cni
+  - Name: Customize networking configuration
+    File: microshift-networking-settings
+  - Name: Configuring the SR-IOV network operator
+    File: microshift-sriov
+  - Name: Networking settings for fully disconnected hosts
+    File: microshift-disconnected-network-config
+- Name: Expose applications externally
+  Dir: microshift_expose_apps
+  Topics:
+  - Name: Configure the router and network ingress
+    File: microshift-nw-router
+  - Name: Configure routes to expose your applications to external users
+    File: microshift-configuring-routes
+- Name: Secure and control traffic
+  Dir: microshift_secure_traffic
+  Topics:
+  - Name: Network policies
+    Dir: microshift_network_policy
+    Topics:
+    - Name: About network policies
+      File: microshift-network-policy-index
+    - Name: Creating network policies
+      File: microshift-creating-network-policy
+    - Name: Editing network policies
+      File: microshift-editing-network-policy
+    - Name: Deleting network policies
+      File: microshift-deleting-network-policy
+    - Name: Viewing network policies
+      File: microshift-viewing-network-policy
+  - Name: Firewall configuration
+    File: microshift-firewall
 - Name: Multiple networks
   Dir: microshift_multiple_networks
   Topics:
@@ -192,12 +207,6 @@ Topics:
     File: microshift-cni-multus
   - Name: Configuring and using multiple networks
     File: microshift-cni-multus-using
-- Name: Configuring routes
-  File: microshift-configuring-routes
-- Name: Firewall configuration
-  File: microshift-firewall
-- Name: Networking settings for fully disconnected hosts
-  File: microshift-disconnected-network-config
 ---
 Name: Storage
 Dir: microshift_storage
