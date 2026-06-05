@@ -1,6 +1,6 @@
 :_mod-docs-content-type: ASSEMBLY
 [id="microshift-configuring-routes"]
-= Configuring routes
+= Configure routes to expose your applications to external users
 include::_attributes/attributes-microshift.adoc[]
 :context: microshift-configuring-routes
 
